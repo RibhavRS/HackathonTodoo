@@ -27,7 +27,7 @@ function Signup({ handleLogin }) {
       }
 
       
-      const response = await axios.post('https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/users', {
+      const response = await axios.post('http://192.168.0.84:8000/todo/register/', {
         email,
         password,
         username
