@@ -12,21 +12,24 @@ function Login({ handleLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     Navigate("/");
+    
   
     // try {
-    //   const response = await axios.post('https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/login', {
+    //   const response = await axios.post('http://192.168.242.23:8090/auth/login', {
     //     email,
     //     password
     //   });
   
     //   if (response.status === 200) {
     //     const { token } = response.data;
+    //     console.log(response)
         
     //     localStorage.setItem('token', token);
   
         
         
     //     toast.success('Login successful!');
+      
     //   } else {
     //     toast.error('Login failed. Please check your credentials.');
     //   }
@@ -52,7 +55,7 @@ function Login({ handleLogin }) {
                 <input
                   id="email"
                   name="email"
-                  type="email"
+                  type="text"
                   autoComplete="email"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"

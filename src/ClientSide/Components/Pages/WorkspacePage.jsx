@@ -88,7 +88,9 @@ function WorkspacePage({ workspaceCreators, item, setWorkspaceCreators }) {
       <div className="flex flex-1">
         <div className="flex-grow p-8">
           <div key={item.workspaceName}>
-            <h2>{item.workspaceName}</h2>
+            <h2><b>{item.workspaceName}</b></h2>
+            <p><b>Collaborators:</b>[{item.collaborators}]</p>
+            <p><b>Description:</b>[{item.description}]</p>
 
             <AddTodo
               todoText={todoText}
@@ -104,12 +106,16 @@ function WorkspacePage({ workspaceCreators, item, setWorkspaceCreators }) {
               totalCompletedTasks={totalCompletedTasks}
               completedPercentage={completedPercentage}
             />
-
+            <h2 className="text-2xl font-semibold text-center mb-4">
+                        WORKSPACE
+                    </h2>
             <Workspace
               pendingTasks={pendingTasks}
               handleTaskEdit={handleTaskEdit}
             />
-
+            <h2 className="text-2xl font-semibold text-center mb-4">
+                        COMPLETED TASKS
+            </h2>
             <CompletedTasks
               completedTasks={completedTasks}
               handleTaskEdit={handleTaskEdit}

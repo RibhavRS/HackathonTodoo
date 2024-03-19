@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
-function Modal({ onClose, onWorkspaceCreate,setWorkspaceCreators }) {
+function Modal({ onClose,setWorkspaceCreators }) {
     const [workspaceName, setWorkspaceName] = useState('');
     const [collaborators, setCollaborators] = useState('');
+    const [description, setDescription] = useState('');
 
     const handleWorkspaceNameChange = (event) => {
         setWorkspaceName(event.target.value);
@@ -12,11 +13,16 @@ function Modal({ onClose, onWorkspaceCreate,setWorkspaceCreators }) {
         setCollaborators(event.target.value);
     };
 
+    const handledescriptionChange = (event) => {
+        setDescription(event.target.value);
+    };
+
     const handleSubmit = () => {
        
         const workspace = {
             workspaceName:workspaceName,
             collaborators:collaborators,
+            description:description,
             todos:[]
         }
         setWorkspaceCreators(prevWorkspaceCreators => [...prevWorkspaceCreators, workspace]);
@@ -67,6 +73,18 @@ function Modal({ onClose, onWorkspaceCreate,setWorkspaceCreators }) {
                         id="collaborators"
                         value={collaborators}
                         onChange={handleCollaboratorsChange}
+                        className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    />
+                </div>
+                <div className="mb-6">
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                        Description
+                    </label>
+                    <input
+                        type="text"
+                        id="description"
+                        value={description}
+                        onChange={handledescriptionChange}
                         className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                     />
                 </div>
