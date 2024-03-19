@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// AddTodo.jsx
+import React, { useState , useEffect} from "react";
 
 function AddTodo({
     todoText,
@@ -10,7 +11,6 @@ function AddTodo({
     setDeadline,
 }) {
     const [currentDate, setCurrentDate] = useState("");
-    const [remainingTime, setRemainingTime] = useState("");
 
     useEffect(() => {
         const currentDate = new Date().toLocaleDateString('en-US', {
@@ -21,27 +21,6 @@ function AddTodo({
         });
         setCurrentDate(currentDate);
     }, []);
-
-    useEffect(() => {
-        const calculateRemainingTime = () => {
-            if (Deadline.trim() !== '') {
-                const currentTime = new Date();
-                const deadlineTime = new Date(Deadline);
-                const difference = deadlineTime - currentTime;
-                if (difference <= 0) {
-                    setRemainingTime('Deadline passed');
-                } else {
-                    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                    setRemainingTime(`${days}d ${hours}h ${minutes}m`);
-                }
-            } else {
-                setRemainingTime('');
-            }
-        };
-        calculateRemainingTime();
-    }, [Deadline]);
 
     return (
         <div className="mb-6 bg-gray-800 rounded-lg shadow-lg p-6">
@@ -76,14 +55,12 @@ function AddTodo({
                     className="border border-gray-300 rounded-r px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 ml-2 bg-gray-700 text-white"
                     placeholder="Enter Todo"
                 />
-                <span className="text-gray-300 ml-2">{remainingTime}</span>
                 <button
                     onClick={handleAddTodo}
                     className="bg-blue-500 text-white rounded px-4 py-2 ml-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     Add Todo
                 </button>
-
             </div>
         </div>
     );

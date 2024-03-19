@@ -26,9 +26,8 @@ function Signup({ handleLogin }) {
         return;
       }
 
-      
-      const response = await axios.post('http://192.168.0.84:8000/todo/register/', {
-        email,
+      const response = await axios.post('http://192.168.242.23:8090/auth/register', {
+        // email,l
         password,
         username
       });
