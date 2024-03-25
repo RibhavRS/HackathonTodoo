@@ -3,18 +3,9 @@ import { MdDelete } from "react-icons/md";
 import Modal from "./Modal";
 import ModalNotification from "./ModalNotification";
 
-function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, onClose, onNotification }) {
-  const [showModal, setShowModal] = useState(false);
-  const [showModalNotification, setShowModalNotification] = useState(false);
+function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, toggleModal, showModal, handlenotificationSubmit, handleinformationChange ,  handlereciepantsChange, reciepants, information,toggleNotificationModal,showModalNotification }) {
+
   const [sharedSpacesOpen, setSharedSpacesOpen] = useState(false);
-
-  const toggleModal = () => {
-    setShowModal(!showModal);
-  };
-
-  const toggleNotificationModal = () => {
-    setShowModalNotification(!showModalNotification);
-  };
 
   const handleDeleteWorkspace = (workspaceName) => {
     setWorkspaceCreators((prevWorkspaceCreators) =>
@@ -57,9 +48,9 @@ function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, onClose, on
             </div>
             <div className={`border-t border-gray-700 my-2 ${sharedSpacesOpen ? 'block' : 'hidden'}`}>
               {workspaceCreators.length !== 0 &&
-                workspaceCreators.map((item) => (
+                workspaceCreators.map((item, index) => (
                   <div
-                    key={item.workspaceName}
+                    key={`${item.workspaceName}-${index}`}
                     className="flex items-center justify-between transition-all duration-300 transform hover:scale-105"
                   >
                     <button
@@ -69,7 +60,6 @@ function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, onClose, on
                       className="block py-2 px-8 text-sm text-white rounded hover:bg-gray-700 hover:text-blue-400 w-full text-left"
                     >
                       {item.workspaceName}
-                      {/* ({item.collaborators}) */}
                     </button>
                     <MdDelete
                       onClick={() => handleDeleteWorkspace(item.workspaceName)}
@@ -91,8 +81,8 @@ function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, onClose, on
           <li>
             <button
               onClick={toggleNotificationModal}
-              onClose={toggleModal} 
-              onNotification={onNotification}
+              onClose={toggleModal}
+              // onNotification={onNotification}
               className="block py-2 px-4 text-white rounded hover:bg-gray-700 hover:text-blue-400 w-full text-left"
             >
               Notify
@@ -101,13 +91,15 @@ function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, onClose, on
         </ul>
       </div>
       {showModal && (
-        <Modal
-          setWorkspaceCreators={setWorkspaceCreators}
-          onClose={toggleModal}
-        />
+        <Modal onClose={toggleModal} setWorkspaceCreators={setWorkspaceCreators} workspaceCreators={workspaceCreators} />
+
       )}
       {showModalNotification && (
-        <ModalNotification onClose={toggleNotificationModal}  />
+        <ModalNotification   handlenotificationSubmit={handlenotificationSubmit}
+              handleinformationChange={handleinformationChange}
+              handlereciepantsChange={handlereciepantsChange} 
+              toggleNotificationModal={toggleNotificationModal}
+              reciepants={reciepants} information={information}/>
       )}
     </div>
   );

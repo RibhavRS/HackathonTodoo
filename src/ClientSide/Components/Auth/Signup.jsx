@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link , useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
@@ -8,6 +8,7 @@ function Signup({ handleLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const Navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,8 +27,8 @@ function Signup({ handleLogin }) {
         return;
       }
 
-      const response = await axios.post('http://192.168.242.23:8090/auth/register', {
-        // email,l
+      const response = await axios.post('http://localhost:8090/auth/register', {
+        email,
         password,
         username
       });
@@ -41,10 +42,12 @@ function Signup({ handleLogin }) {
         setUsername('');
       } else {
         toast.error('Signup failed. Please try again.');
+        // window.location.reload()
       }
     } catch (error) {
       console.error('Error signing up:', error);
       toast.error('Signup failed. Please try again.');
+      // window.location.reload()
     }
   };
 

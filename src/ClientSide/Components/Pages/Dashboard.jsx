@@ -1,21 +1,37 @@
-import React, { useState } from "react";
-import { MdDelete } from "react-icons/md";
-import Modal from "../components/Modal";
+import { useEffect } from 'react';
+import { MdDelete } from 'react-icons/md';
 
-function Dashboard({ workspaceCreators, setWorkspaceCreators, setPage }) {
-  const [showModal, setShowModal] = useState(false);
-  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
+function Dashboard({ workspaceCreators, setWorkspaceCreators, setPage, toggleModal }) {
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      try {
+        const response = await fetch('https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/workspace');
+        if (!response.ok) {
+          throw new Error('Failed to fetch workspaces');
+        }
+        const data = await response.json();
+        setWorkspaceCreators(data);
+      } catch (error) {
+        console.error('Error fetching workspaces:', error);
+      }
+    };
+    fetchWorkspaces();
+  }, [setWorkspaceCreators]);
 
-  const toggleModal = () => {
-    setShowModal(!showModal);
-  };
-
-  const handleDeleteWorkspace = (workspaceName) => {
-    setWorkspaceCreators((prevWorkspaceCreators) =>
-      prevWorkspaceCreators.filter(
-        (item) => item.workspaceName !== workspaceName
-      )
-    );
+  const handleDeleteWorkspace = async (workspaceName) => {
+    try {
+      const response = await fetch(`https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/workspace/${workspaceName}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete workspace');
+      }
+      setWorkspaceCreators(prevWorkspaceCreators =>
+        prevWorkspaceCreators.filter(item => item.workspaceName !== workspaceName)
+      );
+    } catch (error) {
+      console.error('Error deleting workspace:', error);
+    }
   };
 
   const handleWorkspaceClick = (workspaceName) => {
@@ -23,7 +39,6 @@ function Dashboard({ workspaceCreators, setWorkspaceCreators, setPage }) {
   };
 
   const getSolidColor = () => {
-    // Generate a random light color code
     const color = `hsl(${Math.floor(Math.random() * 360)}, 70%, 80%)`;
     return color;
   };
@@ -39,54 +54,29 @@ function Dashboard({ workspaceCreators, setWorkspaceCreators, setPage }) {
 
       <div className="max-w-4xl w-full">
         <ul className="grid grid-cols-3 gap-4 w-full">
-          {workspaceCreators.length !== 0 &&
+          {workspaceCreators && workspaceCreators.length !== 0 &&
             workspaceCreators.map((item, index) => (
-              <button
+              <div
                 key={`${item.workspaceName}-${index}`}
                 className="relative rounded-lg overflow-hidden shadow-md transition-all duration-300 transform hover:scale-105 flex flex-col justify-center text-black border border-gray-300"
                 style={{
                   backgroundColor: getSolidColor(),
                 }}
-                onClick={() => {
-                  handleWorkspaceClick(item.workspaceName);
-                }}
               >
-                <div className="p-4 text-center opacity-100 transition-opacity duration-300 hover:opacity-0">
-                  <h3 className="text-lg font-semibold mb-2 text-white ">
-                    {item.workspaceName}
-                  </h3>
-                  <p className="text-sm text-white">{item.description}</p>
-                </div>
-                <div className="absolute inset-0 bg-black opacity-0 transition-opacity duration-300 hover:opacity-50 rounded-lg"></div>
-                {/* <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 hover:opacity-100">
-                  <h3 className="text-lg font-semibold text-white">
-                    {item.workspaceName}
-                  </h3>
-                </div> */}
-                <div className="flex justify-end p-2">
-                  <MdDelete
-                    onClick={() => handleDeleteWorkspace(item.workspaceName)}
-                    size={20}
-                    className="text-black cursor-pointer"
-                  />
-                </div>
-              </button>
+                <button onClick={() => handleWorkspaceClick(item.workspaceName)}>
+                  <div className="p-4 text-center opacity-100 transition-opacity duration-300 hover:opacity-0">
+                    <h3 className="text-lg font-semibold mb-2 text-white ">{item.workspaceName}</h3>
+                    <p className="text-sm text-white">{item.description}</p>
+                  </div>
+                  <div className="absolute inset-0 bg-black opacity-0 transition-opacity duration-300 hover:opacity-50 rounded-lg"></div>
+                </button>
+                <button className="absolute top-0 right-0 mt-2 mr-2" onClick={() => handleDeleteWorkspace(item.workspaceName)}>
+                  <MdDelete size={20} className="text-white cursor-pointer" />
+                </button>
+              </div>
             ))}
         </ul>
       </div>
-
-      {showModal && (
-        <Modal
-          setWorkspaceCreators={setWorkspaceCreators}
-          onClose={toggleModal}
-        />
-      )}
-
-      {selectedWorkspace && (
-        <div>
-          {/* Render your component here based on selectedWorkspace */}
-        </div>
-      )}
     </div>
   );
 }

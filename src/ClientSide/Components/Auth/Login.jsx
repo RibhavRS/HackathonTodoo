@@ -11,11 +11,28 @@ function Login({ handleLogin }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    Navigate("/");
+
+    try {
+      const usersResponse = await axios.get('https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/users');
+  
+      const user = usersResponse.data.find(user => user.email === email && user.password === password);
+  
+      if (user) {
+        // Login successful
+        toast.success('Login successful!');
+        Navigate("/");
+      } else {
+        // Login failed
+        toast.error('Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      console.error('Error logging in:', error);
+      toast.error('Login failed. Please try again later.');
+    }
     
   
     // try {
-    //   const response = await axios.post('http://192.168.242.23:8090/auth/login', {
+    //   const response = await axios.post('https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/users', {
     //     email,
     //     password
     //   });
@@ -23,11 +40,8 @@ function Login({ handleLogin }) {
     //   if (response.status === 200) {
     //     const { token } = response.data;
     //     console.log(response)
-        
+    //     Navigate("/");
     //     localStorage.setItem('token', token);
-  
-        
-        
     //     toast.success('Login successful!');
       
     //   } else {

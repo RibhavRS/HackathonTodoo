@@ -1,54 +1,86 @@
-import React from 'react';
+import React, { useState }  from 'react';
+import { BsFillPersonFill } from 'react-icons/bs';
+import { FaBell } from 'react-icons/fa';
+import { MdDelete } from "react-icons/md";
 
-function Header({ user, onLogout, notificationCount, toggleModal }) {
-  const handleNotificationClick = () => {
-    toggleModal();
+function Header({ user, onLogout, tnmodal, notifications, handleDeletenotification }) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+    setShowNotifications(false); 
   };
+
+  const handleNotificationClick = () => {
+    setShowNotifications(!showNotifications);
+  };
+
+  const handleLogout = () => {
+    onLogout();
+  };
+
+
 
   return (
     <header className="bg-gray-900 text-white p-4 flex justify-between items-center">
-      <div>
-        <span className="text-lg">Hey, {user}</span>
-      </div>
-      <div className="flex items-center"> {/* Align items in a row */}
-        {notificationCount > 0 && (
-          <div className="relative mr-4"> {/* Add margin-right for spacing */}
-            <button
-              onClick={handleNotificationClick}
-              className="bg-gray-900 text-white py-1 px-2 rounded hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 relative"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.828 19.243a1 1 0 01-1.414 0l-1.414-1.414a7 7 0 10-9.9 0L6.586 17.83a1 1 0 01-1.414 0l-1.414-1.414M19 14v1a1 1 0 01-1 1H6a1 1 0 01-1-1v-1m14 0a4 4 0 11-8 0v-1"
-                />
-              </svg>
-              <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
-                {notificationCount}
-              </span>
-            </button>
+      <div className="flex items-center">
+        <div className="mr-auto">
+          <div className="flex items-center">
+            <span className="text-3xl font-bold text-white">Task</span>
+            <span className="text-3xl font-bold text-red-600">Buddy</span>
           </div>
-        )}
-        <button
-          onClick={onLogout}
-          className="bg-red-600 text-white py-1 px-2 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-        >
-          Logout
-        </button>
+        </div>
+      </div>
+      <div className="flex items-center">
+        <div className="mr-4">
+          <button
+            onClick={tnmodal}
+            className="bg-gray-900 text-white py-1 px-2 rounded hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 relative"
+          >
+            <FaBell size={24} onClick={handleNotificationClick} />
+            {notifications.length > 0 && (
+              <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
+                {notifications.length}
+              </span>
+            )}
+          </button>
+          {showNotifications && (
+            <div className="absolute right-0 mt-8 w-48 bg-white shadow-lg rounded text-black">
+              {notifications.map((notification, index) => (
+                <div key={index} className="p-2 border-b flex justify-between items-center">
+                <span>{notification}</span>
+                <MdDelete
+                  onClick={() => handleDeletenotification(index)}
+                  size={20}
+                  className="text-black cursor-pointer"
+                />
+              </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="relative">
+          <button
+            onClick={handleDropdownToggle}
+            className="bg-gray-900 text-white py-1 px-2 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 relative"
+          >
+            <BsFillPersonFill size={24} />
+          </button>
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded">
+              <div className="p-2">
+                <p className="text-gray-800 text-sm font-medium mb-2">{user}</p>
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 text-white py-1 px-2 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

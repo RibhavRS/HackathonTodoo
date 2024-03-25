@@ -1,7 +1,7 @@
 import React from 'react';
 import Task from './Task';
 
-function Workspace({ pendingTasks, handleTaskEdit, handleTaskDelete, remainingTime }) {
+function Workspace({ pendingTasks, handleTaskEdit, remainingTime,deleteTodo }) {
     return (
         <div className="mt-2 mb-4 rounded-lg overflow-hidden px-4 py-2">
             <div className="text-center">
@@ -9,15 +9,13 @@ function Workspace({ pendingTasks, handleTaskEdit, handleTaskDelete, remainingTi
                     <Task
                         key={todo.id}
                         task={todo}
-                        onTaskEdit={handleTaskEdit}
-                        onTaskDelete={handleTaskDelete}
+                        handleTaskEdit={handleTaskEdit}
+                        deleteTodo={deleteTodo}
                         remainingTime={remainingTime}
                     />
                 ))}
             </div>
         </div>
-
-
     );
 }
 
