@@ -1,28 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-function ModalNotification({ onClose}) {
- 
-    const [reciepants, setreciepants] = useState('');
-    const [information, setinformation] = useState('');
-
-    const handleinformationChange = (event) =>{
-        setinformation(event.target.value);
-    }
-
-    const handlereciepantsChange = (event) => {
-        setreciepants(event.target.value);
-    };
-
-    const handleSubmit = () => {
-        onClose(); 
-    };
+function ModalNotification({ handlenotificationSubmit, handleinformationChange ,  handlereciepantsChange, toggleNotificationModal, reciepants, information }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black opacity-50"></div>
             <div className="relative bg-white rounded-lg p-8">
                 <div className="absolute top-0 right-0 m-4">
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 focus:outline-none">
+                    <button onClick={toggleNotificationModal} className="text-gray-500 hover:text-gray-800 focus:outline-none">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-6 w-6"
@@ -67,13 +52,13 @@ function ModalNotification({ onClose}) {
                
                 <div className="flex justify-end">
                     <button
-                        onClick={handleSubmit}
+                        onClick={handlenotificationSubmit}
                         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none mr-2"
                     >
                         Submit
                     </button>
                     <button
-                        onClick={onClose}
+                        onClick={toggleNotificationModal}
                         className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 focus:outline-none"
                     >
                         Cancel

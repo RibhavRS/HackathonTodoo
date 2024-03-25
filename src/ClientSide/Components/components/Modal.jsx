@@ -1,33 +1,62 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 
-function Modal({ onClose,setWorkspaceCreators }) {
+function Modal({ onClose, setWorkspaceCreators, workspaceCreators }) {
     const [workspaceName, setWorkspaceName] = useState('');
-    const [collaborators, setCollaborators] = useState('');
     const [description, setDescription] = useState('');
+
+    // useEffect(() => {
+    //     console.log(collaborators, 'cccccccccccccc');
+    // }, [])
+
+    // console.error("hello")
+
 
     const handleWorkspaceNameChange = (event) => {
         setWorkspaceName(event.target.value);
-    };
-
-    const handleCollaboratorsChange = (event) => {
-        setCollaborators(event.target.value);
     };
 
     const handledescriptionChange = (event) => {
         setDescription(event.target.value);
     };
 
-    const handleSubmit = () => {
-       
+    const handleSubmit = async () => {
         const workspace = {
-            workspaceName:workspaceName,
-            collaborators:collaborators,
-            description:description,
-            todos:[]
+            workspaceName: workspaceName,
+            // collaborators: collaborators,
+            description: description,
+            todos: []
+        };
+
+        const isWorkspaceNameExists = workspaceCreators.some(item => item.workspaceName === workspaceName);
+
+        if (isWorkspaceNameExists) {
+            toast.error('Workspace name already exists')
+            return;
         }
-        setWorkspaceCreators(prevWorkspaceCreators => [...prevWorkspaceCreators, workspace]);
-        onClose(); 
+
+        try {
+            const response = await fetch('https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/workspace', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(workspace)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to add workspace');
+            }
+
+            setWorkspaceCreators(prevWorkspaceCreators => [...prevWorkspaceCreators, workspace]);
+            // setCollaborators('');
+            onClose();
+        } catch (error) {
+            console.error('Error adding workspace:', error);
+        }
     };
+
+
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -53,6 +82,7 @@ function Modal({ onClose,setWorkspaceCreators }) {
                 </div>
                 <h2 className="text-xl font-semibold mb-4">Add Shared Workspace</h2>
                 <div className="mb-6">
+                    <ToastContainer />
                     <label htmlFor="workspaceName" className="block text-sm font-medium text-gray-700 mb-1">
                         Workspace Name
                     </label>
@@ -64,7 +94,7 @@ function Modal({ onClose,setWorkspaceCreators }) {
                         className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                     />
                 </div>
-                <div className="mb-6">
+                {/* <div className="mb-6">
                     <label htmlFor="collaborators" className="block text-sm font-medium text-gray-700 mb-1">
                         Collaborators
                     </label>
@@ -75,7 +105,7 @@ function Modal({ onClose,setWorkspaceCreators }) {
                         onChange={handleCollaboratorsChange}
                         className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                     />
-                </div>
+                </div> */}
                 <div className="mb-6">
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                         Description

@@ -6,70 +6,96 @@ import { useNavigate } from "react-router-dom";
 import Dashboard from "./Dashboard";
 import MyTaskPage from "./MyTaskPage";
 import WorkspacePage from "./WorkspacePage";
-import Modal from "../components/Modal";
+
 
 const HomePage = ({ user }) => {
-  const [page, setPage] = useState("Dashboard");
   const navigate = useNavigate();
+  const [page, setPage] = useState("Dashboard");
+  // const [collaborators, setCollaborators] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [todos, setTodos] = useState([]);
+  const [workspaceCreators, setWorkspaceCreators] = useState([]);
+  const [notifications, setNotifications] = useState(['a', 'b']);
+  const [togglenotificationModal,settogglenotificationModal] = useState(false);
+  const [reciepants, setreciepants] = useState('');
+  const [information, setinformation] = useState('');
+  const [showModalNotification, setShowModalNotification] = useState(false);
 
-  const toggleModal = () => {
-    setShowModal(!showModal);
+
+  const handleDeletenotification = (index) => {
+    const updatedNotifications = [...notifications];
+    updatedNotifications.splice(index, 1);
+    setNotifications(updatedNotifications);
   };
 
-  // const handleDeleteWorkspace = (workspaceName) => {
-  //   setWorkspaceCreators((prevWorkspaceCreators) =>
-  //     prevWorkspaceCreators.filter(
-  //       (item) => item.workspaceName !== workspaceName
-  //     )
-  //   );
-  // };
+  const handleinformationChange = (event) =>{
+    setinformation(event.target.value);
+}
+
+const handlereciepantsChange = (event) => {
+    setreciepants(event.target.value);
+};
+
+const toggleNotificationModal = () => {
+  setShowModalNotification(!showModalNotification);
+};
+
+  const deleteTodo = (todoId) => {
+    const filteredTodos = todos.filter((todo) => todo.id !== todoId);
+    setTodos(filteredTodos);
+  
+    const updatedWorkspaceCreators = workspaceCreators.map((workspace) => ({
+      ...workspace,
+      todos: workspace.todos.filter((todo) => todo.id !== todoId),
+    }));
+    setWorkspaceCreators(updatedWorkspaceCreators);
+  };
+
+  const handlenotificationSubmit = () => {
+    let temp = [...notifications]
+    temp.push(information)
+    setNotifications(temp); 
+    toggleNotificationModal();
+    setinformation('')
+    setreciepants('')
+  };
+  
+
+  const tnmodal = () =>{
+    settogglenotificationModal((prev) => !prev);
+  }
+  
+  const toggleModal = () => {
+    setShowModal((prev) => !prev);
+  };
+
+
 
   const handleLogout = () => {
     navigate("/login");
   };
 
-  const [todos, setTodos] = useState([]);
-
-  const handleTaskEdit = (id, description, subtasks, completed) => {
-    setTodos(
-      todos.map((todo) => {
-        if (todo.id === id) {
-          return { ...todo, description: description, subtasks: subtasks, completed: completed };
-        }
-        return todo;
-      })
-    );
-  };
-
-  const handleTaskDelete = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id));
-  };
-
-  const onClose = () => {
-    setShowModal(false);
-  };
   
-  const onNotification = () => {
-    
-    setNotificationCount(notificationCount + 1);
-  };
-  
+  // const onNotification = () => {
+  //   setNotificationCount(notificationCount + 1);
+  // };
 
   const pendingTasks = todos.filter((todo) => !todo.completed);
-
-  const [workspaceCreators, setWorkspaceCreators] = useState([]);
-
   const completedTasks = todos.filter(todo => todo.completed);
-  const totalCompletedTasks = completedTasks.length;
-  const totalPendingTasks = pendingTasks.length;
-  const totalTasks = totalCompletedTasks + totalPendingTasks;
-  const completedPercentage = totalTasks > 0 ? Math.round((totalCompletedTasks / totalTasks) * 100) : 0;
+
 
   return (
     <div className="flex flex-col h-screen">
-      <Header onLogout={handleLogout} notificationCount={notificationCount} toggleModal={toggleModal} />
+      <Header onLogout={handleLogout} 
+      notificationCount={notificationCount} 
+      toggleModal={toggleModal} 
+      notifications={notifications} 
+      tnmodal={tnmodal}
+      handleDeletenotification={handleDeletenotification}
+      setPage={setPage}
+       />
+
       <div className="flex flex-1">
         <div className="flex-none w-1/4 bg-gray-200 p-4 h-100vh">
           <nav>
@@ -77,8 +103,18 @@ const HomePage = ({ user }) => {
               setPage={setPage}
               workspaceCreators={workspaceCreators}
               setWorkspaceCreators={setWorkspaceCreators}
-              // onClose={onClose} 
-              onNotification={onNotification}
+              toggleModal={toggleModal}
+              showModal={showModal}
+              // handleCollaboratorsChange={handleCollaboratorsChange}
+              // collaborators={collaborators}
+              // setCollaborators={setCollaborators}
+              handlenotificationSubmit={handlenotificationSubmit}
+              handleinformationChange={handleinformationChange}
+              handlereciepantsChange={handlereciepantsChange}
+              reciepants={reciepants} 
+              information={information}
+              toggleNotificationModal={toggleNotificationModal}
+              showModalNotification={showModalNotification}
             />
           </nav>
         </div>
@@ -87,26 +123,19 @@ const HomePage = ({ user }) => {
             <Dashboard
             setWorkspaceCreators={setWorkspaceCreators}
             workspaceCreators={workspaceCreators}
-            // selectedWorkspace={workspaceName}
-            // handleDeleteWorkspace={handleDeleteWorkspace}
-            // modal={modal}
-            // show={showModal}
+            showModal={showModal}
             toggleModal= {toggleModal}
             setPage={setPage}
             />
           )}
           {page === "TaskPage" && (
             <MyTaskPage
-              handleTaskEdit={handleTaskEdit}
+              // handleTaskEdit={handleTaskEdit}
               pendingTasks={pendingTasks}
               workspaceCreators={workspaceCreators}
               todos={todos}
               setTodos={setTodos}
-              totalCompletedTasks={totalCompletedTasks}
-              completedTasks={completedTasks}
-              totalPendingTasks={totalPendingTasks}
-              completedPercentage={completedPercentage}
-              handleTaskDelete={handleTaskDelete}
+              deleteTodo={deleteTodo}
             />
           )}
           {workspaceCreators.length !== 0 &&
@@ -119,6 +148,12 @@ const HomePage = ({ user }) => {
                       setWorkspaceCreators={setWorkspaceCreators}
                       workspaceCreators={workspaceCreators}
                       selectedWorkspace={item.workspaceName}
+                      collaborators={item.collaborators}
+                      // setCollaborators={setCollaborators}
+                      todos={todos}
+                      setTodos={setTodos}
+                      deleteTodo={deleteTodo}
+                      completedTasks={completedTasks}
                     />
                   )}
                 </div>
