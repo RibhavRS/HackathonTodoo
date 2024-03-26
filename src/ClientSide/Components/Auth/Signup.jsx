@@ -1,56 +1,49 @@
 import React, { useState } from 'react';
-import { Link , useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
-
+ 
 function Signup({ handleLogin }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const Navigate = useNavigate();
-
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+ 
+    if (password.length < 6) {
+      toast.error('Password should be at least 6 characters long.');
+      return;
+    }
+ 
     try {
-      
-      // const emailCheckResponse = await axios.get(`https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/users?email=${email}`);
-      // if (emailCheckResponse.data.length > 0) {
-      //   toast.error('Email already exists. Please use a different email or log in instead.');
-      //   return;
-      // }
 
-    
-      if (password.length < 6) {
-        toast.error('Password should be at least 6 characters long.');
-        return;
-      }
-
-      const response = await axios.post('http://localhost:8090/auth/register', {
-        email,
-        password,
-        username
+        const response = await axios.post('http://20.84.109.30:8090/auth/register', {
+        username,
+        password
       });
-
-      if (response.status === 201) {
-        const userData = response.data;
-        handleLogin(userData);
+ 
+      if (response.status === 200) {
+        handleLogin(response.data); 
         toast.success('Signup successful!');
-        setEmail('');
-        setPassword('');
         setUsername('');
+        setPassword('');
+        const { token, userId } = response.data;
+ 
+       
+        localStorage.setItem('token', token); 
+        localStorage.setItem('userId',userId); 
+        // navigate('/'); 
       } else {
         toast.error('Signup failed. Please try again.');
-        // window.location.reload()
       }
     } catch (error) {
       console.error('Error signing up:', error);
-      toast.error('Signup failed. Please try again.');
-      // window.location.reload()
+      toast.error(error.response?.data?.message || 'Signup failed. Please try again.');
     }
   };
-
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <ToastContainer />
@@ -65,25 +58,12 @@ function Signup({ handleLogin }) {
                   id="username"
                   name="username"
                   type="text"
-                  autoComplete="text"
+                  autoComplete="username"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-              <div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div>
@@ -100,7 +80,7 @@ function Signup({ handleLogin }) {
                 />
               </div>
             </div>
-
+ 
             <div className="flex items-center justify-between">
               <div className="text-sm">
                 <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
@@ -108,7 +88,7 @@ function Signup({ handleLogin }) {
                 </Link>
               </div>
             </div>
-
+ 
             <div>
               <button
                 type="submit"
@@ -123,5 +103,5 @@ function Signup({ handleLogin }) {
     </div>
   );
 }
-
+ 
 export default Signup;

@@ -1,11 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { MdDelete } from 'react-icons/md';
 
-function Dashboard({ workspaceCreators, setWorkspaceCreators, setPage, toggleModal }) {
+function Dashboard({ workspaceCreators,setWorkspaceCreators, setPage, toggleModal }) {
+
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
-        const response = await fetch('https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/workspace');
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://20.84.109.30:8090/api/lists/owner', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch workspaces');
         }
@@ -16,26 +22,33 @@ function Dashboard({ workspaceCreators, setWorkspaceCreators, setPage, toggleMod
       }
     };
     fetchWorkspaces();
-  }, [setWorkspaceCreators]);
+  }, []);
 
-  const handleDeleteWorkspace = async (workspaceName) => {
+  const handleDeleteWorkspace = async (workspaceId) => {
     try {
-      const response = await fetch(`https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/workspace/${workspaceName}`, {
-        method: 'DELETE'
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://20.84.109.30:8090/api/lists/${workspaceId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       if (!response.ok) {
         throw new Error('Failed to delete workspace');
       }
       setWorkspaceCreators(prevWorkspaceCreators =>
-        prevWorkspaceCreators.filter(item => item.workspaceName !== workspaceName)
+        prevWorkspaceCreators.filter(item => item.id !== workspaceId)
       );
     } catch (error) {
       console.error('Error deleting workspace:', error);
     }
   };
 
+
+  //Not setting the workspace page
   const handleWorkspaceClick = (workspaceName) => {
-    setPage(workspaceName);
+    setPage("workspace");
+    console.log(workspaceName)
   };
 
   const getSolidColor = () => {
@@ -54,27 +67,26 @@ function Dashboard({ workspaceCreators, setWorkspaceCreators, setPage, toggleMod
 
       <div className="max-w-4xl w-full">
         <ul className="grid grid-cols-3 gap-4 w-full">
-          {workspaceCreators && workspaceCreators.length !== 0 &&
-            workspaceCreators.map((item, index) => (
-              <div
-                key={`${item.workspaceName}-${index}`}
-                className="relative rounded-lg overflow-hidden shadow-md transition-all duration-300 transform hover:scale-105 flex flex-col justify-center text-black border border-gray-300"
-                style={{
-                  backgroundColor: getSolidColor(),
-                }}
-              >
-                <button onClick={() => handleWorkspaceClick(item.workspaceName)}>
-                  <div className="p-4 text-center opacity-100 transition-opacity duration-300 hover:opacity-0">
-                    <h3 className="text-lg font-semibold mb-2 text-white ">{item.workspaceName}</h3>
-                    <p className="text-sm text-white">{item.description}</p>
-                  </div>
-                  <div className="absolute inset-0 bg-black opacity-0 transition-opacity duration-300 hover:opacity-50 rounded-lg"></div>
-                </button>
-                <button className="absolute top-0 right-0 mt-2 mr-2" onClick={() => handleDeleteWorkspace(item.workspaceName)}>
-                  <MdDelete size={20} className="text-white cursor-pointer" />
-                </button>
-              </div>
-            ))}
+          {workspaceCreators.map((item) => (
+            <div
+              key={item.id}
+              className="relative rounded-lg overflow-hidden shadow-md transition-all duration-300 transform hover:scale-105 flex flex-col justify-center text-black border border-gray-300"
+              style={{
+                backgroundColor: getSolidColor(),
+              }}
+            >
+              <button onClick={() => handleWorkspaceClick(item.title)}>
+                <div className="p-4 text-center opacity-100 transition-opacity duration-300 hover:opacity-0">
+                  <h3 className="text-lg font-semibold mb-2 text-white ">{item.title}</h3>
+                  <p className="text-sm text-white">{item.description}</p>
+                </div>
+                <div className="absolute inset-0 bg-black opacity-0 transition-opacity duration-300 hover:opacity-50 rounded-lg"></div>
+              </button>
+              <button className="absolute top-0 right-0 mt-2 mr-2" onClick={() => handleDeleteWorkspace(item.id)}>
+                <MdDelete size={20} className="text-white cursor-pointer" />
+              </button>
+            </div>
+          ))}
         </ul>
       </div>
     </div>
