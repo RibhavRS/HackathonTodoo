@@ -7,12 +7,24 @@ function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, toggleModal
 
   const [sharedSpacesOpen, setSharedSpacesOpen] = useState(false);
 
-  const handleDeleteWorkspace = (workspaceName) => {
-    setWorkspaceCreators((prevWorkspaceCreators) =>
-      prevWorkspaceCreators.filter(
-        (item) => item.workspaceName !== workspaceName
-      )
-    );
+  const handleDeleteWorkspace = async (workspaceId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://20.84.109.30:8090/api/lists/${workspaceId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete workspace');
+      }
+      setWorkspaceCreators(prevWorkspaceCreators =>
+        prevWorkspaceCreators.filter(item => item.id !== workspaceId)
+      );
+    } catch (error) {
+      console.error('Error deleting workspace:', error);
+    }
   };
 
   const toggleSharedSpaces = () => {
@@ -48,35 +60,27 @@ function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, toggleModal
             </div>
             <div className={`border-t border-gray-700 my-2 ${sharedSpacesOpen ? 'block' : 'hidden'}`}>
               {workspaceCreators.length !== 0 &&
-                workspaceCreators.map((item, index) => (
+                workspaceCreators.map((item) => (
                   <div
-                    key={`${item.workspaceName}-${index}`}
+                    key={item.id}
                     className="flex items-center justify-between transition-all duration-300 transform hover:scale-105"
                   >
                     <button
                       onClick={() => {
-                        setPage(item.workspaceName);
+                        setPage(item.title);
                       }}
                       className="block py-2 px-8 text-sm text-white rounded hover:bg-gray-700 hover:text-blue-400 w-full text-left"
                     >
-                      {item.workspaceName}
+                      {item.title}
                     </button>
                     <MdDelete
-                      onClick={() => handleDeleteWorkspace(item.workspaceName)}
+                      onClick={() => handleDeleteWorkspace(item.id)}
                       size={20}
                       className="text-white cursor-pointer"
                     />
                   </div>
                 ))}
             </div>
-          </li>
-          <li>
-            <button
-              className="block py-2 px-4 text-white rounded hover:bg-gray-700 hover:text-blue-400 w-full text-left"
-              onClick={() => setPage("TaskPage")}
-            >
-              My Tasks
-            </button>
           </li>
           <li>
             <button
@@ -92,7 +96,6 @@ function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, toggleModal
       </div>
       {showModal && (
         <Modal onClose={toggleModal} setWorkspaceCreators={setWorkspaceCreators} workspaceCreators={workspaceCreators} />
-
       )}
       {showModalNotification && (
         <ModalNotification   handlenotificationSubmit={handlenotificationSubmit}

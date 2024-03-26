@@ -1,60 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Login({ handleLogin }) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const usersResponse = await axios.get('https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/users');
-  
-      const user = usersResponse.data.find(user => user.email === email && user.password === password);
-  
-      if (user) {
-        // Login successful
+      const response = await axios.post('http://20.84.109.30:8090/auth/login', {
+        username,
+        password,
+      });
+
+
+      if (response.status === 200) {
+        const { token, userId } = response.data;
+        localStorage.setItem('token', token);
+        localStorage.setItem('userId', userId);
+        handleLogin(response.data);
+
         toast.success('Login successful!');
-        Navigate("/");
+        navigate('/');
       } else {
-        // Login failed
         toast.error('Login failed. Please check your credentials.');
       }
     } catch (error) {
       console.error('Error logging in:', error);
-      toast.error('Login failed. Please try again later.');
+      toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
     }
-    
-  
-    // try {
-    //   const response = await axios.post('https://65ee234e08706c584d9b1c74.mockapi.io/reactcrud/users', {
-    //     email,
-    //     password
-    //   });
-  
-    //   if (response.status === 200) {
-    //     const { token } = response.data;
-    //     console.log(response)
-    //     Navigate("/");
-    //     localStorage.setItem('token', token);
-    //     toast.success('Login successful!');
-      
-    //   } else {
-    //     toast.error('Login failed. Please check your credentials.');
-    //   }
-    // } catch (error) {
-    //   console.error('Error logging in:', error);
-    //   toast.error('Login failed. Please check your credentials.');
-    // }
   };
-
- 
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -67,15 +47,15 @@ function Login({ handleLogin }) {
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
                 <input
-                  id="email"
-                  name="email"
+                  id="username"
+                  name="username"
                   type="text"
-                  autoComplete="email"
+                  autoComplete="username"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
               <div>
