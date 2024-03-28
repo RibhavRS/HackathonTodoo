@@ -1,199 +1,239 @@
 import React, { useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 
-function Task({ task, deleteTodo, handleTaskEdit }) {
+function Task({ task, deleteTodo, handleTaskEdit, fetchCollaboratorTasks }) {
   const [showModal, setShowModal] = useState(false);
-  const [subtasks, setSubtasks] = useState([]);
-  const [collaborators, setCollaborators] = useState([]);
-  const [collaboratorName, setCollaboratorName] = useState('');
-  const [hoveredCollaborator, setHoveredCollaborator] = useState(null);
+  const [subtasks, setSubtasks] = useState([{ name: '', collaborators: [], tempName: '', tempCollaboratorId: '' }]);
 
-  const handleTaskClick = () => {
-    setShowModal(true);
+  const handleTaskClick = () => setShowModal(true);
+
+  const handleDeleteTask = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://20.84.109.30:8090/api/ts/tasks/${task.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error('Failed to delete task');
+
+      deleteTodo(task.id);
+      toast.success("Todo Deleted");
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
   };
 
-  const handleSaveTask = () => {
-    handleTaskEdit(task.id, { ...task, subtasks, collaborators });
+  const handleTaskComplete = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://20.84.109.30:8090/api/ts/tasks/${task.id}/complete`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to complete task');
+
+      handleTaskEdit(task.id, task.description, true);
+      fetchCollaboratorTasks();
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error completing task:', error);
+    }
+  };
+
+
+  const handleSaveTask = async () => {
+    // Create subtasks via API
+    for (let subtask of subtasks) {
+      if (subtask.status === 'PENDING') {
+        await createSubtask(subtask);
+      }
+    }
+    // Filter out subtasks that have been successfully created
+    const updatedSubtasks = subtasks.filter(subtask => subtask.status !== 'COMPLETED');
+    handleTaskEdit(task.id, { ...task, subtasks: updatedSubtasks });
     setShowModal(false);
   };
 
-  const handleTaskComplete = () => {
-    const updatedTask = { ...task, completed: true };
-    handleTaskEdit(task.id, updatedTask.description, true); 
-    setShowModal(false);
-  };
-
-  const handleDeleteTask = () => {
-    deleteTodo(task.id);
-  };
-
-  const handleSubtaskChange = (index, value) => {
+  const handleUpdateSubtaskName = (index) => {
     const updatedSubtasks = [...subtasks];
-    updatedSubtasks[index] = value;
+    updatedSubtasks[index].name = updatedSubtasks[index].tempName;
     setSubtasks(updatedSubtasks);
   };
 
-  const addSubtask = () => {
-    setSubtasks([...subtasks, '']);
+  const handleChangeSubtaskName = (index, value) => {
+    const updatedSubtasks = [...subtasks];
+    updatedSubtasks[index].tempName = value;
+    setSubtasks(updatedSubtasks);
   };
 
-  const removeSubtask = (index) => {
+  const handleAddSubtask = () => {
+    setSubtasks([...subtasks, { name: '', collaborators: [], tempName: '', tempCollaboratorId: '' }]);
+  };
+
+  const handleRemoveSubtask = (index) => {
     const updatedSubtasks = [...subtasks];
     updatedSubtasks.splice(index, 1);
     setSubtasks(updatedSubtasks);
   };
 
-  const handleCollaboratorSubmit = () => {
-    setCollaborators([...collaborators, collaboratorName]);
-    setCollaboratorName('');
+  const handleAddSubtaskCollaborator = (index) => {
+    const updatedSubtasks = [...subtasks];
+    const collaboratorId = updatedSubtasks[index].tempCollaboratorId.trim();
+    if (collaboratorId && !updatedSubtasks[index].collaborators.includes(collaboratorId)) {
+      updatedSubtasks[index].collaborators.push(collaboratorId);
+      updatedSubtasks[index].tempCollaboratorId = '';
+      setSubtasks(updatedSubtasks);
+    }
   };
 
-  const removeCollaborator = (index) => {
-    const updatedCollaborators = [...collaborators];
-    updatedCollaborators.splice(index, 1);
-    setCollaborators(updatedCollaborators);
+  const handleChangeSubtaskCollaboratorId = (index, value) => {
+    const updatedSubtasks = [...subtasks];
+    updatedSubtasks[index].tempCollaboratorId = value;
+    setSubtasks(updatedSubtasks);
   };
 
-  const handleCollaboratorHover = (collaborator) => {
-    setHoveredCollaborator(collaborator);
+  const handleRemoveSubtaskCollaborator = (subtaskIndex, collaboratorIndex) => {
+    const updatedSubtasks = [...subtasks];
+    updatedSubtasks[subtaskIndex].collaborators.splice(collaboratorIndex, 1);
+    setSubtasks(updatedSubtasks);
   };
 
-  const handleCollaboratorBlur = () => {
-    setHoveredCollaborator(null);
+  const createSubtask = async (subtask) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`http://20.84.109.30:8090/api/ts/subtasks?parentTaskId=${task.id}&assignedUserId=${subtask.tempCollaboratorId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: subtask.tempName,
+          description: subtask.tempName, 
+          status: subtask.status,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to create subtask');
+      
+      toast.success('Subtask created successfully');
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating subtask:', error);
+      toast.error('Failed to create subtask');
+    }
   };
 
-  const handleDeleteCollaborator = (index) => {
-    removeCollaborator(index);
-    setHoveredCollaborator(null);
+
+
+  // The rest of your component logic remains the same
+  
+  const handleCompleteSubtask = (index) => {
+    const updatedSubtasks = [...subtasks];
+    updatedSubtasks[index].status = 'COMPLETED';
+    setSubtasks(updatedSubtasks);
   };
 
   return (
     <div>
       <div
-        className={`p-4 mt-2 mb-2 rounded-lg cursor-pointer ${task.priority === 'high' ? 'bg-red-200' :
-            task.priority === 'medium' ? 'bg-yellow-200' : 'bg-green-200'
-          }`}
+        className={`p-4 mt-2 mb-2 rounded-lg cursor-pointer ${task.priority === 'HIGH' ? 'bg-red-200' : task.priority === 'MEDIUM' ? 'bg-yellow-200' : 'bg-green-200'}`}
         onClick={handleTaskClick}
       >
         <div className="flex justify-between items-center">
-          <div className="flex items-center">
+          <div>
             <span className={task.completed ? 'line-through' : ''}><b>{task.title}</b></span>
             {task.completed && <sup className="text-xs ml-2">✔</sup>}
           </div>
-          <div className='flex space-x-2'>
+          <div>
             <span>{task.deadline}</span>
-            <button onClick={() => setShowModal(true)} className="text-gray-500 hover:text-gray-700 focus:outline-none">
-              +
-            </button>
+            <button onClick={() => setShowModal(true)} className="ml-2 text-gray-500 hover:text-gray-700">+</button>
           </div>
         </div>
 
-        <div>
-          {subtasks.map((subtask, index) => (
-            <div key={index} className="ml-4 flex">
-              <span>{index + 1}. {subtask}</span>
-            </div>
-          ))}
-        </div>
 
-        <div className="flex mt-2">
-          {collaborators.map((collaborator, index) => (
-            <div key={index} className="relative mr-2">
-              <div
-                className="rounded-full bg-gray-300 w-8 h-8 flex items-center justify-center text-white z-10"
-                onMouseEnter={() => handleCollaboratorHover(collaborator)}
-                onMouseLeave={handleCollaboratorBlur}
-              >
-                {collaborator[0]}
+        {subtasks.map((subtask, index) => (
+          <div key={index} className="ml-6 mt-2">
+            <div className="flex justify-between items-center">
+              <div>
+                <span>{index + 1}. {subtask.name}</span>
               </div>
-              {hoveredCollaborator === collaborator && (
-                <div className="absolute top-0 left-full ml-2 bg-white border border-gray-300 p-2 rounded z-20">
-                  <span>{collaborator}</span>
-                  <button onClick={() => handleDeleteCollaborator(index)} className="ml-2 text-red-500 hover:text-red-700 focus:outline-none">
-                    Delete
-                  </button>
-                </div>
-              )}
+              <div className="flex">
+                {subtask.collaborators.map((collaborator, collabIndex) => (
+                  <span key={collabIndex} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">{collaborator}</span>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+
       </div>
 
+      {/* Modal for Adding/Editing Subtasks and Collaborators */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
-          <div className="bg-white p-8 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">{task.title}</h2>
-            <h3 className="text-lg font-semibold mb-2">Subtasks:</h3>
-            {subtasks.map((subtask, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <input
-                  type="text"
-                  value={subtask}
-                  onChange={(e) => handleSubtaskChange(index, e.target.value)}
-                  className="border border-gray-300 rounded-md p-2 mr-2 w-full"
-                  placeholder="Enter subtask"
-                />
-                <button
-                  onClick={() => removeSubtask(index)}
-                  className="text-red-500 hover:text-red-700 focus:outline-none"
-                >
-                  Remove
+        <div className="bg-white p-8 rounded-lg w-1/2">
+          <h2 className="text-xl font-semibold mb-4">{task.title}</h2>
+          {subtasks.map((subtask, index) => (
+            <div key={index} className="mb-4">
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    value={subtask.tempName}
+                    onChange={(e) => handleChangeSubtaskName(index, e.target.value)}
+                    className="border border-gray-300 rounded-md p-2 mr-2 flex-grow"
+                    placeholder="Subtask name"
+                  />
+                  <button onClick={() => handleUpdateSubtaskName(index)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Save
+                  </button>
+                  <button onClick={() => handleRemoveSubtask(index)} className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Delete
+                  </button>
+                  <button onClick={() => handleCompleteSubtask(index)} className="ml-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                  Mark as Completed
                 </button>
+                </div>
+                <div className="flex items-center mt-2">
+                  <input
+                    type="text"
+                    value={subtask.tempCollaboratorId}
+                    onChange={(e) => handleChangeSubtaskCollaboratorId(index, e.target.value)}
+                    className="border border-gray-300 rounded-md p-2 mr-2 flex-grow"
+                    placeholder="Collaborator's ID"
+                  />
+                  <button onClick={() => handleAddSubtaskCollaborator(index)} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Add Collaborator
+                  </button>
+                </div>
+                <div className="flex flex-wrap">
+                  {subtask.collaborators.map((collaborator, collabIndex) => (
+                    <div key={collabIndex} className="flex items-center mr-2 mb-2">
+                      <div className="bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700">{collaborator}</div>
+                      <button onClick={() => handleRemoveSubtaskCollaborator(index, collabIndex)} className="ml-1 text-red-500 hover:text-red-700">
+                        x
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
-            <button
-              onClick={addSubtask}
-              className="text-blue-500 hover:text-blue-700 focus:outline-none mb-4"
-            >
+            <button onClick={handleAddSubtask} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
               + Add Subtask
             </button>
-
-            <h3 className="text-lg font-semibold mb-2">Collaborators:</h3>
-            <div className="flex items-center mb-2">
-              <input
-                type="text"
-                value={collaboratorName}
-                onChange={(e) => setCollaboratorName(e.target.value)}
-                className="border border-gray-300 rounded-md p-2 mr-2 w-full"
-                placeholder="Enter collaborator's name"
-              />
-              <button
-                onClick={handleCollaboratorSubmit}
-                className="text-blue-500 hover:text-blue-700 focus:outline-none"
-              >
-                Add
-              </button>
-            </div>
-            {collaborators.map((collaborator, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <span>{collaborator}</span>
-                <button onClick={() => handleDeleteCollaborator(index)} className="ml-2 text-red-500 hover:text-red-700 focus:outline-none">
-                  Delete
-                </button>
-              </div>
-            ))}
-
-            <div className="flex justify-between">
-              <button
-                onClick={handleSaveTask}
-                className="bg-blue-500 text-white rounded
-                px-4 py-2 ml-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                OK
+            <div className="mt-4 flex justify-end">
+              <button onClick={handleSaveTask} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Save Changes
               </button>
               {!task.completed && (
-                <button
-                  onClick={handleTaskComplete}
-                  className="bg-green-500 text-white rounded px-4 py-2 ml-2 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  Complete
-                </button>
+                <button onClick={handleTaskComplete} className="bg-green-500 text-white rounded px-4 py-2 hover:bg-green-600 focus:outline-none">Complete</button>
               )}
-              <button
-                onClick={handleDeleteTask}
-                className="bg-red-500 text-white rounded px-4 py-2 ml-2 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                Delete
-              </button>
+              <button onClick={handleDeleteTask} className="bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600 focus:outline-none">Delete</button>
             </div>
           </div>
         </div>

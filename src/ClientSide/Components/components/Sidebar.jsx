@@ -44,6 +44,14 @@ function Sidebar({ setPage, workspaceCreators, setWorkspaceCreators, toggleModal
             </button>
           </li>
           <li>
+            <button
+              className="block py-2 px-4 text-white rounded hover:bg-gray-700 hover:text-blue-400 w-full text-left"
+              onClick={() => setPage("TaskPage")}
+            >
+              My Task Page
+            </button>
+          </li>
+          <li>
             <div className="flex justify-between items-center">
               <button
                 className="block py-2 px-4 text-white rounded hover:bg-gray-700 hover:text-blue-400 w-full text-left"

@@ -45,10 +45,9 @@ function Dashboard({ workspaceCreators,setWorkspaceCreators, setPage, toggleModa
   };
 
 
-  //Not setting the workspace page
-  const handleWorkspaceClick = (workspaceName) => {
-    setPage("workspace");
-    console.log(workspaceName)
+  const handleWorkspaceClick = (workspaceName, listId) => {
+    setPage(workspaceName);
+    localStorage.setItem('listId',listId)
   };
 
   const getSolidColor = () => {
@@ -75,7 +74,7 @@ function Dashboard({ workspaceCreators,setWorkspaceCreators, setPage, toggleModa
                 backgroundColor: getSolidColor(),
               }}
             >
-              <button onClick={() => handleWorkspaceClick(item.title)}>
+              <button onClick={() => handleWorkspaceClick(item.title, item.id)}>
                 <div className="p-4 text-center opacity-100 transition-opacity duration-300 hover:opacity-0">
                   <h3 className="text-lg font-semibold mb-2 text-white ">{item.title}</h3>
                   <p className="text-sm text-white">{item.description}</p>
