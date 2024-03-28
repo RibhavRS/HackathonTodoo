@@ -3,28 +3,29 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
-
+ 
 function Login({ handleLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+ 
     try {
-      const response = await axios.post('http://20.84.109.30:8090/auth/login', {
+const response = await axios.post('http://20.84.109.30:8090/auth/login', {
         username,
         password,
       });
-
-
+ 
+ 
       if (response.status === 200) {
         const { token, userId } = response.data;
         localStorage.setItem('token', token);
-        localStorage.setItem('userId', userId);
-        handleLogin(response.data);
-
+        let parsed = parseJwt(token);
+        let {sub,user_Id} = parseJwt(token);
+        localStorage.setItem('userId', user_Id);
+        localStorage.setItem('username',sub)
         toast.success('Login successful!');
         navigate('/');
       } else {
@@ -35,7 +36,22 @@ function Login({ handleLogin }) {
       toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
     }
   };
-
+ 
+  function parseJwt(token) {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+        throw new Error('The token is invalid');
+    }
+ 
+    // The payload is the second part. Decode it from Base64Url
+    const payload = parts[1];
+    const decodedPayload = atob(payload.replace(/_/g, '/').replace(/-/g, '+'));
+ 
+    // Parse the decoded payload from JSON into an object
+    return JSON.parse(decodedPayload);
+}
+ 
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <ToastContainer />
@@ -72,7 +88,7 @@ function Login({ handleLogin }) {
                 />
               </div>
             </div>
-
+ 
             <div className="flex items-center justify-between">
               <div className="text-sm">
                 <Link to="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
@@ -80,7 +96,7 @@ function Login({ handleLogin }) {
                 </Link>
               </div>
             </div>
-
+ 
             <div>
               <button
                 type="submit"
@@ -95,5 +111,5 @@ function Login({ handleLogin }) {
     </div>
   );
 }
-
+ 
 export default Login;

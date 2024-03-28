@@ -27,8 +27,9 @@ function Header({ user, onLogout, tnmodal, notifications, handleDeletenotificati
       <div className="flex items-center">
         <div className="mr-auto">
           <div className="flex items-center">
-            <span className="text-3xl font-bold text-white">Task</span>
+          <span className="text-3xl font-bold text-white">Task</span>
             <span className="text-3xl font-bold text-red-600">Buddy</span>
+            <span >   {localStorage.getItem("username")} ID: {localStorage.getItem("userId")}</span>
           </div>
         </div>
       </div>

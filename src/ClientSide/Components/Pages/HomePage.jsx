@@ -41,16 +41,26 @@ const toggleNotificationModal = () => {
   setShowModalNotification(!showModalNotification);
 };
 
-  const deleteTodo = (todoId) => {
-    const filteredTodos = todos.filter((todo) => todo.id !== todoId);
-    setTodos(filteredTodos);
-  
-    const updatedWorkspaceCreators = workspaceCreators.map((workspace) => ({
+const deleteTodo = (todoId) => {
+  // Filter out the todo with the given todoId from todos
+  const filteredTodos = todos.filter((todo) => todo.id !== todoId);
+  setTodos(filteredTodos);
+
+  // Update workspaceCreators, ensuring each workspace has a todos array and then filter todos
+  const updatedWorkspaceCreators = workspaceCreators.map((workspace) => {
+    // Ensure workspace.todos is initialized as an empty array if it's undefined
+    const todosArray = workspace.todos ? workspace.todos : [];
+    // Filter out the todo with the given todoId from todosArray
+    const updatedTodos = todosArray.filter((todo) => todo.id !== todoId);
+    return {
       ...workspace,
-      todos: workspace.todos.filter((todo) => todo.id !== todoId),
-    }));
-    setWorkspaceCreators(updatedWorkspaceCreators);
-  };
+      todos: updatedTodos,
+    };
+  });
+  setWorkspaceCreators(updatedWorkspaceCreators);
+};
+
+
 
   const handlenotificationSubmit = () => {
     let temp = [...notifications]
@@ -138,27 +148,30 @@ const toggleNotificationModal = () => {
               deleteTodo={deleteTodo}
             />
           )}
-          {workspaceCreators.length !== 0 &&
-            workspaceCreators.map((item) => {
-              return (
-                <div key={item.workspaceName}>
-                  {page === item.workspaceName && (
-                    <WorkspacePage
-                      item={item}
-                      setWorkspaceCreators={setWorkspaceCreators}
-                      workspaceCreators={workspaceCreators}
-                      selectedWorkspace={item.workspaceName}
-                      collaborators={item.collaborators}
-                      // setCollaborators={setCollaborators}
-                      todos={todos}
-                      setTodos={setTodos}
-                      deleteTodo={deleteTodo}
-                      completedTasks={completedTasks}
-                    />
-                  )}
-                </div>
-              );
-            })}
+{
+  workspaceCreators && Array.isArray(workspaceCreators) && workspaceCreators.length !== 0 && workspaceCreators.map((item) => {
+    return (
+      <div key={item.id}>
+        {page === item.title && (
+          <WorkspacePage
+            item={item}
+            setWorkspaceCreators={setWorkspaceCreators}
+            workspaceCreators={workspaceCreators}
+            selectedWorkspace={item.workspaceName}
+            collaborators={item.collaborators}
+            todos={todos} // Add a check for todos
+            setTodos={setTodos}
+            deleteTodo={deleteTodo}
+            completedTasks={completedTasks} // Add a check for completedTasks
+          />
+        )}
+      </div>
+    );
+  })
+}
+
+
+
         </div>
       </div>
     </div>

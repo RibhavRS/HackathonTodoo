@@ -42,9 +42,9 @@ function AddTodo({
                     onChange={(e) => setPriority(e.target.value)}
                     className="border border-gray-300 rounded-r px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 ml-2 bg-gray-700 text-white"
                 >
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
+                    <option value="HIGH">High</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="LOW">Low</option>
                 </select>
                 <input
                     type="datetime-local"

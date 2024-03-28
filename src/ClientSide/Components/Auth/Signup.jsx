@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -18,7 +19,7 @@ function Signup({ handleLogin }) {
     }
  
     try {
-
+ 
         const response = await axios.post('http://20.84.109.30:8090/auth/register', {
         username,
         password
@@ -33,7 +34,10 @@ function Signup({ handleLogin }) {
  
        
         localStorage.setItem('token', token); 
-        localStorage.setItem('userId',userId); 
+        let parsed = parseJwt(token);
+        let {sub,user_Id} = parseJwt(token);
+        localStorage.setItem('userId', user_Id);
+        localStorage.setItem('username',sub)
         // navigate('/'); 
       } else {
         toast.error('Signup failed. Please try again.');
@@ -43,6 +47,20 @@ function Signup({ handleLogin }) {
       toast.error(error.response?.data?.message || 'Signup failed. Please try again.');
     }
   };
+ 
+  function parseJwt(token) {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+        throw new Error('The token is invalid');
+    }
+ 
+    // The payload is the second part. Decode it from Base64Url
+    const payload = parts[1];
+    const decodedPayload = atob(payload.replace(/_/g, '/').replace(/-/g, '+'));
+ 
+    // Parse the decoded payload from JSON into an object
+    return JSON.parse(decodedPayload);
+}
  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
