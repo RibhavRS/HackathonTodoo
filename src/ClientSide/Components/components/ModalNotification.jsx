@@ -27,10 +27,10 @@ function ModalNotification({ handlenotificationSubmit, handleinformationChange ,
                 <h2 className="text-xl font-semibold mb-4">Reciepants</h2>
                 <div className="mb-6">
                     <label htmlFor="workspaceName" className="block text-sm font-medium text-gray-700 mb-1">
-                        Name
+                        Reciepent ID
                     </label>
                     <input
-                        type="text "
+                        type="number"
                         id="reciepants"
                         value={reciepants}
                         onChange={handlereciepantsChange}

@@ -7,15 +7,12 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
-function WorkspacePage({ workspaceCreators, item, setWorkspaceCreators, todos, setTodos, deleteTodo }) {
+function WorkspacePage({ workspaceCreators, item, setWorkspaceCreators, todos, setTodos, deleteTodo, setNotifications, notifications }) {
   const [todoText, setTodoText] = useState("");
   const [priority, setPriority] = useState("MEDIUM");
   const [nextId, setNextId] = useState(1);
   const [deadline, setDeadline] = useState(new Date().toLocaleString());
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-
-  
   useEffect(() => {
     fetchCollaboratorTasks();
   }, []); 
@@ -24,7 +21,7 @@ function WorkspacePage({ workspaceCreators, item, setWorkspaceCreators, todos, s
     try {
       const token = localStorage.getItem('token');
       const listId = localStorage.getItem('listId');
-      const response = await fetch(`http://20.84.109.30:8090/api/ts/tasks/list/${listId}`, {
+      const response = await fetch(`http://20.84.109.30:8090/api/ts/tasks/list/${listId}/user`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -148,53 +145,62 @@ function WorkspacePage({ workspaceCreators, item, setWorkspaceCreators, todos, s
     totalTasks > 0 ? Math.round((totalCompletedTasks / totalTasks) * 100) : 0;
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex flex-1">
-        <div className="flex-grow p-8">
-          <div key={`${item.workspaceName}-${item.index}`}>
-            <div className="flex justify-between">
-              <div>
-                <h2>
-                  <b>Name:</b>{item.title}
-                </h2>
-                <p><b>Description:</b> {item.description}</p>
-              </div>
-            </div>
-            <ToastContainer />
-            <AddTodo
-              todoText={todoText}
-              setTodoText={setTodoText}
-              priority={priority}
-              Deadline={deadline}
-              setDeadline={setDeadline}
-              setPriority={setPriority}
-              handleAddTodo={handleAddTodo}
-              item={item}
-            />
-            <Statistics
-              totalPendingTasks={totalPendingTasks}
-              totalCompletedTasks={totalCompletedTasks}
-              completedPercentage={completedPercentage}
-            />
+<div className="flex flex-col h-screen">
+  <div className="flex flex-1 border-l-4 border-black p-4 bg-gray-50">
+    <div className="flex-grow p-8 bg-white shadow-md rounded-lg">
+      <div key={`${item.workspaceName}-${item.index}`} className="space-y-6">
+        <div className="flex justify-between">
+          <div>
+            <h2 className="text-xl font-bold">
+              Name: <span className="font-normal">{item.title}</span>
+            </h2>
+            <p className="mt-1 font-bold">
+              Description: <span className="font-normal">{item.description}</span>
+            </p>
+          </div>
+        </div>
+        <ToastContainer />
+        <AddTodo
+          todoText={todoText}
+          setTodoText={setTodoText}
+          priority={priority}
+          Deadline={deadline}
+          setDeadline={setDeadline}
+          setPriority={setPriority}
+          handleAddTodo={handleAddTodo}
+          item={item}
+        />
+        <Statistics
+          totalPendingTasks={totalPendingTasks}
+          totalCompletedTasks={totalCompletedTasks}
+          completedPercentage={completedPercentage}
+        />
 
-{/* 
-{todos.map((todo) => (
-  <div key={todo.id}>
-    <li>{todo.title} {todo.status} {todo.priority}</li>
-  </div>
-))} */}
-            <h2 className="text-2xl font-semibold text-center mb-4">
-              WORKSPACE
-            </h2>
-            <Workspace pendingTasks={pendingTasks} handleTaskEdit={handleTaskEdit} deleteTodo={deleteTodo} fetchCollaboratorTasks={fetchCollaboratorTasks} />
-            <h2 className="text-2xl font-semibold text-center mb-4">
-              COMPLETED TASKS
-            </h2>
-            <CompletedTasks completedTasks={completedTasks} handleTaskEdit={handleTaskEdit} deleteTodo={deleteTodo} />
+        <h2 className="text-2xl font-semibold text-center my-4">
+          WORKSPACE
+        </h2>
+        <Workspace 
+          pendingTasks={pendingTasks} 
+          handleTaskEdit={handleTaskEdit} 
+          deleteTodo={deleteTodo} 
+          fetchCollaboratorTasks={fetchCollaboratorTasks} 
+          setNotifications={setNotifications} 
+          notifications={notifications} 
+        />
+
+        <h2 className="text-2xl font-semibold text-center my-4">
+          COMPLETED TASKS
+        </h2>
+        <CompletedTasks 
+          completedTasks={completedTasks} 
+          handleTaskEdit={handleTaskEdit} 
+          deleteTodo={deleteTodo} 
+        />
       </div>
     </div>
   </div>
 </div>
+
 );
 }
 

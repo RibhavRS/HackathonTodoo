@@ -1,8 +1,6 @@
 import React from "react";
 import Task from "../components/Task";
-import Workspace from "../components/Workspace";
-import Statistics from "../components/Statistics";
-import CompletedTasks from '../components/CompletedTasks';
+
 
 const MyTaskPage = ({ handleTaskEdit, workspaceCreators, deleteTodo }) => {
   return (
