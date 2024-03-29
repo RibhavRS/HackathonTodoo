@@ -54,11 +54,10 @@ function Signup({ handleLogin }) {
         throw new Error('The token is invalid');
     }
  
-    // The payload is the second part. Decode it from Base64Url
+
     const payload = parts[1];
     const decodedPayload = atob(payload.replace(/_/g, '/').replace(/-/g, '+'));
  
-    // Parse the decoded payload from JSON into an object
     return JSON.parse(decodedPayload);
 }
  

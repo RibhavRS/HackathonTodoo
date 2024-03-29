@@ -7,7 +7,7 @@ function Dashboard({ workspaceCreators,setWorkspaceCreators, setPage, toggleModa
     const fetchWorkspaces = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://20.84.109.30:8090/api/lists/owner', {
+        const response = await fetch('http://20.84.109.30:8090/api/lists/user', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -56,10 +56,10 @@ function Dashboard({ workspaceCreators,setWorkspaceCreators, setPage, toggleModa
   };
 
   return (
-    <div className="w-full bg-gray-200 h-full flex flex-col justify-start items-start border-l-4 border-black p-4">
+    <div className="w-full bg-gray-200 h-screen flex flex-col justify-start items-start border-l-4 border-black p-4">
       <button
         onClick={toggleModal}
-        className="block py-2 px-4 text-white rounded bg-blue-500 hover:bg-blue-600 hover:text-white text-left mb-4"
+        className="block py-2 px-4 text-white rounded bg-blue-900 hover:bg-red-600 hover:text-white text-left mb-4"
       >
         Add New List
       </button>

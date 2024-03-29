@@ -1,5 +1,5 @@
 import React, { useState }  from 'react';
-import { BsFillPersonFill } from 'react-icons/bs';
+import { BsFillPersonFill, BsPersonBadge } from 'react-icons/bs'; // Added an icon for the ID
 import { FaBell } from 'react-icons/fa';
 import { MdDelete } from "react-icons/md";
 
@@ -20,17 +20,27 @@ function Header({ user, onLogout, tnmodal, notifications, handleDeletenotificati
     onLogout();
   };
 
-
+  const username = localStorage.getItem("username");
+  const userId = localStorage.getItem("userId");
 
   return (
     <header className="bg-gray-900 text-white p-4 flex justify-between items-center">
       <div className="flex items-center">
-        <div className="mr-auto">
-          <div className="flex items-center">
-          <span className="text-3xl font-bold text-white">Task</span>
-            <span className="text-3xl font-bold text-red-600">Buddy</span>
-            <span >   {localStorage.getItem("username")} ID: {localStorage.getItem("userId")}</span>
-          </div>
+        <div className="mr-auto flex items-center">
+          <span className="text-3xl font-bold text-white mr-2">Task</span>
+          <span className="text-3xl font-bold text-red-600 mr-4">Buddy</span>
+          {username && (
+            <div className="flex items-center bg-gray-800 text-white py-1 px-3 rounded-full">
+              <BsFillPersonFill className="mr-2"/>
+              <span>{username}</span>
+            </div>
+          )}
+          {userId && (
+            <div className="flex items-center bg-gray-700 text-white py-1 px-3 ml-4 rounded-full">
+              <BsPersonBadge className="mr-2"/>
+              <span>ID: {userId}</span>
+            </div>
+          )}
         </div>
       </div>
       <div className="flex items-center">
@@ -49,14 +59,14 @@ function Header({ user, onLogout, tnmodal, notifications, handleDeletenotificati
           {showNotifications && (
             <div className="absolute right-0 mt-8 w-48 bg-white shadow-lg rounded text-black">
               {notifications.map((notification, index) => (
-                <div key={index} className="p-2 border-b flex justify-between items-center">
-                <span>{notification}</span>
-                <MdDelete
-                  onClick={() => handleDeletenotification(index)}
-                  size={20}
-                  className="text-black cursor-pointer"
-                />
-              </div>
+                <div key={notification.id}>
+                  <p>{notification.message}</p>
+                  <MdDelete
+                    onClick={() => handleDeletenotification(index)}
+                    size={20}
+                    className="text-black cursor-pointer"
+                  />
+                </div>
               ))}
             </div>
           )}

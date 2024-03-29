@@ -6,18 +6,19 @@ import { useNavigate } from "react-router-dom";
 import Dashboard from "./Dashboard";
 import MyTaskPage from "./MyTaskPage";
 import WorkspacePage from "./WorkspacePage";
+import { toast } from "react-toastify";
 
 
-const HomePage = ({ user }) => {
+
+const HomePage = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState("Dashboard");
-  // const [collaborators, setCollaborators] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [todos, setTodos] = useState([]);
   const [workspaceCreators, setWorkspaceCreators] = useState([]);
   const [notifications, setNotifications] = useState(['a', 'b']);
-  const [togglenotificationModal,settogglenotificationModal] = useState(false);
+  const [togglenotificationModal, settogglenotificationModal] = useState(false);
   const [reciepants, setreciepants] = useState('');
   const [information, setinformation] = useState('');
   const [showModalNotification, setShowModalNotification] = useState(false);
@@ -29,53 +30,72 @@ const HomePage = ({ user }) => {
     setNotifications(updatedNotifications);
   };
 
-  const handleinformationChange = (event) =>{
+  const handleinformationChange = (event) => {
     setinformation(event.target.value);
-}
+  }
 
-const handlereciepantsChange = (event) => {
+  const handlereciepantsChange = (event) => {
     setreciepants(event.target.value);
-};
-
-const toggleNotificationModal = () => {
-  setShowModalNotification(!showModalNotification);
-};
-
-const deleteTodo = (todoId) => {
-  // Filter out the todo with the given todoId from todos
-  const filteredTodos = todos.filter((todo) => todo.id !== todoId);
-  setTodos(filteredTodos);
-
-  // Update workspaceCreators, ensuring each workspace has a todos array and then filter todos
-  const updatedWorkspaceCreators = workspaceCreators.map((workspace) => {
-    // Ensure workspace.todos is initialized as an empty array if it's undefined
-    const todosArray = workspace.todos ? workspace.todos : [];
-    // Filter out the todo with the given todoId from todosArray
-    const updatedTodos = todosArray.filter((todo) => todo.id !== todoId);
-    return {
-      ...workspace,
-      todos: updatedTodos,
-    };
-  });
-  setWorkspaceCreators(updatedWorkspaceCreators);
-};
-
-
-
-  const handlenotificationSubmit = () => {
-    let temp = [...notifications]
-    temp.push(information)
-    setNotifications(temp); 
-    toggleNotificationModal();
-    setinformation('')
-    setreciepants('')
   };
-  
 
-  const tnmodal = () =>{
+  const toggleNotificationModal = () => {
+    setShowModalNotification(!showModalNotification);
+  };
+
+  const deleteTodo = (todoId) => {
+    const filteredTodos = todos.filter((todo) => todo.id !== todoId);
+    setTodos(filteredTodos);
+    const updatedWorkspaceCreators = workspaceCreators.map((workspace) => {
+      const todosArray = workspace.todos ? workspace.todos : [];
+      const updatedTodos = todosArray.filter((todo) => todo.id !== todoId);
+      return {
+        ...workspace,
+        todos: updatedTodos,
+      };
+    });
+    setWorkspaceCreators(updatedWorkspaceCreators);
+  };
+
+
+
+  const handlenotificationSubmit = async () => {
+    const invitationData = {
+      receiverId: reciepants,
+      message: information,
+      status: "SENT"
+    };
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('http://20.84.109.30:8090/api/in/invitations?listId=${listId}', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(invitationData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create invitation');
+      }
+      const newInvitation = await response.json();
+      setNotifications(prevNotifications => [...prevNotifications, newInvitation]);
+      toast.success('Invitation sent successfully');
+      setinformation('');
+      setreciepants('');
+      toggleNotificationModal();
+    } catch (error) {
+      console.error('Error creating invitation:', error);
+      toast.error('Failed to send invitation');
+    }
+  };
+
+
+
+
+  const tnmodal = () => {
     settogglenotificationModal((prev) => !prev);
   }
-  
+
   const toggleModal = () => {
     setShowModal((prev) => !prev);
   };
@@ -83,13 +103,34 @@ const deleteTodo = (todoId) => {
 
 
   const handleLogout = () => {
+    localStorage.clear();
     navigate("/login");
   };
 
-  
-  // const onNotification = () => {
-  //   setNotificationCount(notificationCount + 1);
-  // };
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('http://20.84.109.30:8090/api/in/notifications', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch notifications');
+      }
+      const fetchedNotifications = await response.json();
+      setNotifications(fetchedNotifications);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      toast.error('Failed to fetch notifications');
+    }
+  };
 
   const pendingTasks = todos.filter((todo) => !todo.completed);
   const completedTasks = todos.filter(todo => todo.completed);
@@ -97,17 +138,17 @@ const deleteTodo = (todoId) => {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header onLogout={handleLogout} 
-      notificationCount={notificationCount} 
-      toggleModal={toggleModal} 
-      notifications={notifications} 
-      tnmodal={tnmodal}
-      handleDeletenotification={handleDeletenotification}
-      setPage={setPage}
-       />
+      <Header onLogout={handleLogout}
+        notificationCount={notificationCount}
+        toggleModal={toggleModal}
+        notifications={notifications}
+        tnmodal={tnmodal}
+        handleDeletenotification={handleDeletenotification}
+        setPage={setPage}
+      />
 
       <div className="flex flex-1">
-        <div className="flex-none w-1/4 bg-gray-200 p-4 h-100vh">
+        <div className="flex-none w-1/4  p-4 h-h-screen  ">
           <nav>
             <Sidebar
               setPage={setPage}
@@ -115,32 +156,28 @@ const deleteTodo = (todoId) => {
               setWorkspaceCreators={setWorkspaceCreators}
               toggleModal={toggleModal}
               showModal={showModal}
-              // handleCollaboratorsChange={handleCollaboratorsChange}
-              // collaborators={collaborators}
-              // setCollaborators={setCollaborators}
               handlenotificationSubmit={handlenotificationSubmit}
               handleinformationChange={handleinformationChange}
               handlereciepantsChange={handlereciepantsChange}
-              reciepants={reciepants} 
+              reciepants={reciepants}
               information={information}
               toggleNotificationModal={toggleNotificationModal}
               showModalNotification={showModalNotification}
             />
           </nav>
         </div>
-        <div className=" w-3/4 bg-grey-100">
+        <div className=" w-3/4 bg-grey-100 ">
           {page === "Dashboard" && (
             <Dashboard
-            setWorkspaceCreators={setWorkspaceCreators}
-            workspaceCreators={workspaceCreators}
-            showModal={showModal}
-            toggleModal= {toggleModal}
-            setPage={setPage}
+              setWorkspaceCreators={setWorkspaceCreators}
+              workspaceCreators={workspaceCreators}
+              showModal={showModal}
+              toggleModal={toggleModal}
+              setPage={setPage}
             />
           )}
           {page === "TaskPage" && (
             <MyTaskPage
-              // handleTaskEdit={handleTaskEdit}
               pendingTasks={pendingTasks}
               workspaceCreators={workspaceCreators}
               todos={todos}
@@ -148,30 +185,28 @@ const deleteTodo = (todoId) => {
               deleteTodo={deleteTodo}
             />
           )}
-{
-  workspaceCreators && Array.isArray(workspaceCreators) && workspaceCreators.length !== 0 && workspaceCreators.map((item) => {
-    return (
-      <div key={item.id}>
-        {page === item.title && (
-          <WorkspacePage
-            item={item}
-            setWorkspaceCreators={setWorkspaceCreators}
-            workspaceCreators={workspaceCreators}
-            selectedWorkspace={item.workspaceName}
-            collaborators={item.collaborators}
-            todos={todos} // Add a check for todos
-            setTodos={setTodos}
-            deleteTodo={deleteTodo}
-            completedTasks={completedTasks} // Add a check for completedTasks
-          />
-        )}
-      </div>
-    );
-  })
-}
-
-
-
+          {workspaceCreators && Array.isArray(workspaceCreators) && workspaceCreators.length !== 0 && workspaceCreators.map((item) => {
+              return (
+                <div key={item.id}>
+                  {page === item.title && (
+                    <WorkspacePage
+                      item={item}
+                      setWorkspaceCreators={setWorkspaceCreators}
+                      workspaceCreators={workspaceCreators}
+                      selectedWorkspace={item.workspaceName}
+                      collaborators={item.collaborators}
+                      todos={todos} 
+                      setTodos={setTodos}
+                      deleteTodo={deleteTodo}
+                      completedTasks={completedTasks}
+                      setNotifications={setNotifications}
+                      notifications={notifications} 
+                    />
+                  )}
+                </div>
+              );
+            })
+          }
         </div>
       </div>
     </div>
