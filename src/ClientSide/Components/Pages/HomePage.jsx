@@ -17,7 +17,7 @@ const HomePage = () => {
   const [notificationCount, setNotificationCount] = useState(0);
   const [todos, setTodos] = useState([]);
   const [workspaceCreators, setWorkspaceCreators] = useState([]);
-  const [notifications, setNotifications] = useState(['a', 'b']);
+  const [notifications, setNotifications] = useState([]);
   const [togglenotificationModal, settogglenotificationModal] = useState(false);
   const [reciepants, setreciepants] = useState('');
   const [information, setinformation] = useState('');
